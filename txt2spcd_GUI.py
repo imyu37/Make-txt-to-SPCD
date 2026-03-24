@@ -252,7 +252,7 @@ def draw_spectrum_graph(window, window_key, data):
         return
 
     # 创建matplotlib图形
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = plt.subplots(figsize=(6, 4))
 
     wavelengths, intensities = zip(*data)
     ax.plot(
@@ -287,33 +287,36 @@ def gui_main():
     # 定义布局
     layout = [
         [
+            sg.Push(),
             sg.Text(
-                "光谱文本文件转换为OpticStudio SPCD格式",
-                font=("Arial", 16, "bold"),
-            )
+                "光谱TXT文件转换为OpticStudio SPCD文件",
+                font=("Microsoft YaHei", 16, "bold"),
+                justification="center",
+            ),
+            sg.Push(),
         ],
         [
             sg.Text("选择输入文件:", size=(15, 1)),
-            sg.Input(key="-INPUT-"),
+            sg.Input(key="-INPUT-", size=(55, 1)),
             sg.FileBrowse(file_types=(("文本文件", "*.txt"),), button_text="浏览"),
         ],
         [
             sg.Text("输出文件路径:", size=(15, 1)),
-            sg.Input(key="-OUTPUT-"),
+            sg.Input(key="-OUTPUT-", size=(55, 1)),
             sg.FileSaveAs(file_types=(("SPCD文件", "*.spcd"),), button_text="保存"),
         ],
         [
-            sg.Text("数据行数:", size=(15, 1)),
+            sg.Text("输入波长单位:", size=(15, 1)),
+            sg.Combo(["nm", "μm"], default_value="nm", key="-UNIT-", readonly=True),
+        ],
+        [
+            sg.Text("输出数据行数:", size=(15, 1)),
             sg.Combo(
                 ["10", "20", "50", "100", "200"],
-                default_value="200",
+                default_value="50",
                 key="-ROWS-",
                 readonly=True,
             ),
-        ],
-        [
-            sg.Text("波长单位:", size=(15, 1)),
-            sg.Combo(["nm", "μm"], default_value="nm", key="-UNIT-", readonly=True),
         ],
         [sg.Checkbox("归一化强度", key="-NORMALIZE-", default=False)],
         [
@@ -321,22 +324,22 @@ def gui_main():
             sg.Multiline(
                 key="-HEADER-",
                 default_text="",
-                size=(40, 3),
+                size=(50, 4),
             ),
         ],
         [sg.Button("转换", size=(10, 1)), sg.Button("退出", size=(10, 1))],
         [
             sg.Frame(
-                layout=[[sg.Canvas(key="-GRAPH-", size=(800, 400))]],
+                layout=[[sg.Canvas(key="-GRAPH-", size=(600, 300))]],
                 title="光谱曲线",
                 visible=False,
                 key="-GRAPH_FRAME-",
             )
         ],
-        [sg.Text("", key="-STATUS-", size=(50, 2), text_color="red")],
+        [sg.Text("", key="-STATUS-", size=(50, 1), text_color="red")],
     ]
 
-    window = sg.Window("txt2spcd 图形界面", layout, finalize=True)
+    window = sg.Window("", layout, finalize=True)
 
     while True:
         event, values = window.read()
@@ -387,9 +390,7 @@ def gui_main():
 
                 # 写入 SPCD 文件
                 write_spcd(output_file, data, header=header_text)
-                window["-STATUS-"].update(
-                    f"转换成功！SPCD 文件已写入 '{output_file}'。", text_color="green"
-                )
+                window["-STATUS-"].update(f"已成功转换SPCD 文件！", text_color="green")
 
                 # 绘制光谱曲线
                 if MATPLOTLIB_AVAILABLE:
