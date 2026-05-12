@@ -15,7 +15,6 @@ SPCD 格式要求：
 """
 
 import argparse
-import math
 import os
 import sys
 from typing import List, Optional, Tuple
@@ -248,8 +247,7 @@ def main():
 def draw_spectrum_graph(window, window_key, data):
     """绘制光谱曲线"""
     if not MATPLOTLIB_AVAILABLE:
-        print("错误: matplotlib未安装，无法绘制光谱曲线。")
-        return
+        raise RuntimeError("matplotlib未安装，无法绘制光谱曲线。")
 
     # 创建matplotlib图形
     fig, ax = plt.subplots(figsize=(6, 4))
@@ -265,6 +263,9 @@ def draw_spectrum_graph(window, window_key, data):
 
     # 在GUI中嵌入图表
     canvas_elem = window[window_key]
+    if not hasattr(canvas_elem, "Widget") or canvas_elem.Widget is None:
+        raise RuntimeError("GUI画布控件未正确初始化，请重启程序后重试。")
+
     figure_canvas_agg = FigureCanvasTkAgg(fig, canvas_elem.Widget)
     figure_canvas_agg.draw()
     figure_canvas_agg.get_tk_widget().pack(side="top", fill="both", expand=1)
@@ -394,16 +395,26 @@ def gui_main():
 
                 # 绘制光谱曲线
                 if MATPLOTLIB_AVAILABLE:
-                    # 清除之前的图表
-                    for widget in window["-GRAPH-"].Widget.winfo_children():
-                        widget.destroy()
+                    try:
+                        # 清除之前的图表
+                        canvas_elem = window["-GRAPH-"]
+                        if (
+                            hasattr(canvas_elem, "Widget")
+                            and canvas_elem.Widget is not None
+                        ):
+                            for widget in canvas_elem.Widget.winfo_children():
+                                widget.destroy()
 
-                    # 绘制新的光谱曲线
-                    draw_spectrum_graph(window, "-GRAPH-", data)
+                        # 绘制新的光谱曲线
+                        draw_spectrum_graph(window, "-GRAPH-", data)
 
-                    # 显示图表框架
-                    window["-GRAPH_FRAME-"].update(visible=True)
-
+                        # 显示图表框架
+                        window["-GRAPH_FRAME-"].update(visible=True)
+                    except Exception as graph_err:
+                        window["-STATUS-"].update(
+                            f"警告：光谱曲线绘制失败（{graph_err}），但文件已成功转换。",
+                            text_color="orange",
+                        )
                 else:
                     window["-STATUS-"].update(
                         "警告：matplotlib未安装，无法显示光谱曲线。",
@@ -411,9 +422,16 @@ def gui_main():
                     )
 
             except Exception as e:
+                import traceback
+
+                error_msg = f"错误：{e}\n\n详细信息：\n{traceback.format_exc()}"
                 window["-STATUS-"].update(f"错误：{e}", text_color="red")
+                sg.popup_error(error_msg, title="转换错误")
                 # 如果出错，隐藏图表框架
-                window["-GRAPH_FRAME-"].update(visible=False)
+                try:
+                    window["-GRAPH_FRAME-"].update(visible=False)
+                except Exception:
+                    pass
 
     window.close()
 
