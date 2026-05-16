@@ -1,1 +1,4 @@
-__pycache__/txt2spcd_GUI.cpython-313.pyc
+__pycache__/
+.claude/
+.github/
+skills/
