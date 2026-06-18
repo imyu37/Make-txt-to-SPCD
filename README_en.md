@@ -2,6 +2,8 @@
 
 [中文](readme.md)|English
 
+## Briefly
+
 A tool for converting spectral data txt files to OpticStudio SPCD format. It provides an intuitive graphical user interface for easy conversion of spectral data into the format required by optical design software.
 
 ![snapshot](./data/snapshot.png)
