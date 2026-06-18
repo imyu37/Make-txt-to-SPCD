@@ -1,9 +1,11 @@
 # Make-txt-to-SPCD
 
+**简体中文** | [English](README_en.md)
+
 ## 简介
 本项目是一个专门用于将包含光谱数据的txt文件转换为OpticStudio SPCD格式的工具。它提供了一个简单易用的图形界面，让用户可以方便地将光谱数据转换为光学设计软件所需的格式。
 
-![snapshot](snapshot.png)
+![snapshot](./data/snapshot.png)
 
 ## 特性
 - 支持将光谱数据txt文件转换为OpticStudio SPCD格式
